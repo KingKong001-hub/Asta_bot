@@ -55,22 +55,22 @@
 <div align="center">
 
 ```
-🔶 PASO 1: dev
+🔶 PASO 1: 3dev
 ```
 > Activa el modo desarrollador para personalizar tu bot
 
 ```
-🔷 PASO 2: setmodena
+🔷 PASO 2: 3setmodena
 ```
 > Establece el modo de nombre para tu bot
 
 ```
-🔸 PASO 3: setanner
+🔸 PASO 3: 3setbanner
 ```
 > Personaliza el banner de tu bot con imágenes personalizadas
 
 ```
-🔹 PASO 4: setname
+🔹 PASO 4: 3setname
 ```
 > Cambia el nombre de tu bot a tu gusto
 
@@ -154,6 +154,15 @@ npm start
 </details>
 
 📢 EL BOT SE ACTUALIZA CADA SEMANA O MES Y SE LE HACE MANTENIMIENTO EN ESTE REPOSITORIO
+
+### **`📹 Video tutorial de instalacion`**
+
+⬇️ Click en la imagen para ir al video⬇️
+
+<a
+href="https://www.youtube.com/watch?v=SYbEOZZ__Wo"><img src="https://github.com/Fer280809/Asta_bot/blob/main/src/catalogo.jpg" height="205px"></a> 
+
+</div>
 
 ---
 ### **`🌐 Enlaces útiles`**
