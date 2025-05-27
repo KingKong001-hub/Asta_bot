@@ -4,29 +4,78 @@ async function handler(m, { conn, args, usedPrefix, command }) {
   const bankType = 'bank';
 
   if (!args[0] || !args[1]) {
-    const helpMessage = `${emoji} Debes mencionar a quien quieras regalar *${moneda}*.\n> Ejemplo » *${usedPrefix + command} 25000 @mencion*`.trim();
+    const helpMessage = `💰 *¿Quieres hacer una transferencia?*\n\n` +
+      `✨ Menciona al usuario y la cantidad que deseas enviar\n` +
+      `📝 *Ejemplo:* ${usedPrefix + command} 500 @usuario\n` +
+      `🏦 *Nota:* El dinero se transfiere desde tu banco`;
     return conn.sendMessage(m.chat, {text: helpMessage, mentions: [m.sender]}, {quoted: m});
   }
 
-  const count = Math.min(Number.MAX_SAFE_INTEGER, Math.max(100, (isNumber(args[0]) ? parseInt(args[0]) : 100))) * 1;
+  // Sin límites, solo validar que sea un número positivo
+  const count = isNumber(args[0]) ? Math.abs(parseInt(args[0])) : 0;
+  
+  if (count <= 0) {
+    return conn.sendMessage(m.chat, {
+      text: `❌ *Cantidad inválida*\n\n` +
+            `💡 Debes especificar una cantidad válida mayor a 0\n` +
+            `📝 *Ejemplo:* ${usedPrefix + command} 100 @usuario`, 
+      mentions: [m.sender]
+    }, {quoted: m});
+  }
   const who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : args[1] ? (args[1].replace(/[@ .+-]/g, '') + '@s.whatsapp.net') : '';
   
-  if (!who) return conn.sendMessage(m.chat, {text: `${emoji2} Debes regalar al menos 100 ${moneda}*`, mentions: [m.sender]}, {quoted: m});
-  if (!(who in global.db.data.users)) return conn.sendMessage(m.chat, {text: `${emoji2} El usuario ${who} no está en la base de datos.`, mentions: [m.sender]}, {quoted: m});
-  if (user[bankType] * 1 < count) return conn.sendMessage(m.chat, {text: `${emoji2} No tienes suficientes ${moneda} en el banco para transferir.`, mentions: [m.sender]}, {quoted: m});
+  if (!who) {
+    return conn.sendMessage(m.chat, {
+      text: `❌ *¡Oops!* No encontré al usuario\n\n` +
+            `🎯 Debes mencionar a alguien para transferir\n` +
+            `📝 *Ejemplo:* ${usedPrefix + command} 500 @usuario`, 
+      mentions: [m.sender]
+    }, {quoted: m});
+  }
+
+  if (!(who in global.db.data.users)) {
+    return conn.sendMessage(m.chat, {
+      text: `🚫 *Usuario no encontrado*\n\n` +
+            `😅 El usuario que mencionaste no está registrado en el sistema\n` +
+            `💡 Pídele que use algún comando primero`, 
+      mentions: [m.sender]
+    }, {quoted: m});
+  }
+
+  if (user[bankType] * 1 < count) {
+    const currentBank = user[bankType] || 0;
+    return conn.sendMessage(m.chat, {
+      text: `💸 *¡Fondos insuficientes en el banco!*\n\n` +
+            `🏦 *Tu saldo en banco:* ${currentBank} ${moneda}\n` +
+            `📊 *Cantidad solicitada:* ${count} ${moneda}\n` +
+            `💡 Necesitas ${count - currentBank} ${moneda} más en tu banco`, 
+      mentions: [m.sender]
+    }, {quoted: m});
+  }
   
-  user[bankType] -= count * 1;
-  global.db.data.users[who][type] += count * 1;
+  // Realizar la transferencia: del banco del remitente a las monedas del destinatario
+  user[bankType] -= count;
+  global.db.data.users[who][bankType] += count;
 
   const mentionText = `@${who.split('@')[0]}`;
   const totalInBank = user[bankType];
 
-  conn.sendMessage(m.chat, {text: `${emoji} Transferiste *${count} ${moneda}* a ${mentionText}\n> Ahora tienes *${totalInBank} ${moneda}* en total en el banco.`, mentions: [who]}, {quoted: m});
+  // Mensaje de confirmación mejorado
+  const successMessage = `✅ *¡Transferencia exitosa!*\n\n` +
+    `💸 *Transferiste:* ${count} ${moneda}\n` +
+    `👤 *Destinatario:* ${mentionText}\n` +
+    `🏦 *Tu saldo bancario restante:* ${totalInBank} ${moneda}\n\n` +
+    `🎉 ¡El dinero llegó al banco del destinatario!`;
+
+  conn.sendMessage(m.chat, {
+    text: successMessage, 
+    mentions: [who, m.sender]
+  }, {quoted: m});
 }
 
-handler.help = ['pay'];
+handler.help = ['pay', 'transfer'];
 handler.tags = ['rpg'];
-handler.command = ['pay', 'transfer'];
+handler.command = ['pay', 'transfer', 'transferir'];
 handler.group = true;
 handler.register = true;
 
