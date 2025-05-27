@@ -113,9 +113,13 @@ let phoneNumber = global.botNumber
 const methodCodeQR = process.argv.includes("qr")
 const methodCode = !!phoneNumber || process.argv.includes("code")
 const MethodMobile = process.argv.includes("mobile")
-const colores = chalk.bgMagenta.white
-const opcionQR = chalk.bold.green
-const opcionTexto = chalk.bold.cyan
+
+// MENSAJES REDISEÑADOS
+const colores = chalk.bgGradient('cyan', 'magenta').bold.white
+const opcionQR = chalk.bold.hex('#00ff88')
+const opcionTexto = chalk.bold.hex('#ffaa00')
+const bordeDecorado = chalk.hex('#ff6b9d')
+
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
@@ -125,10 +129,41 @@ opcion = '1'
 }
 if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) {
 do {
-opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
+
+// MENSAJE REDISEÑADO CON ASCII ART Y MEJOR FORMATO
+console.log(bordeDecorado(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    🚀 ¡BIENVENIDO A ASTA-BOT! 🚀                            ║
+║                                                              ║
+║    ┌─────────────────────────────────────────────────────┐   ║
+║    │  🔗 SELECCIONA TU MÉTODO DE CONEXIÓN PREFERIDO:    │   ║
+║    └─────────────────────────────────────────────────────┘   ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`))
+
+opcion = await question(
+  colores(' 🎯 OPCIONES DISPONIBLES:\n') + 
+  bordeDecorado(' ╭─────────────────────────────────────╮\n') +
+  opcionQR(' │  📱 1. CÓDIGO QR (Recomendado)      │\n') +
+  opcionTexto(' │  🔐 2. CÓDIGO DE 8 DÍGITOS         │\n') +
+  bordeDecorado(' ╰─────────────────────────────────────╯\n') +
+  chalk.bold.cyan(' ✨ Ingresa tu opción [1-2]: ')
+)
 
 if (!/^[1-2]$/.test(opcion)) {
-console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
+console.log(chalk.bold.hex('#ff4757')(`
+╔════════════════════════════════════════╗
+║  ❌ OPCIÓN INVÁLIDA                    ║
+║                                        ║
+║  ⚠️  Solo se permiten los números:     ║
+║      • 1 (para QR)                     ║
+║      • 2 (para código)                 ║
+║                                        ║
+║  🚫 No uses letras o símbolos          ║
+╚════════════════════════════════════════╝
+`))
 }} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
 } 
 
@@ -176,10 +211,30 @@ phoneNumber = `+${phoneNumber}`
 } while (!await isValidPhoneNumber(phoneNumber))
 rl.close()
 addNumber = phoneNumber.replace(/\D/g, '')
+
+// MENSAJE DEL CÓDIGO DE VINCULACIÓN REDISEÑADO
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`✧ CÓDIGO DE VINCULACIÓN ✧`)), chalk.bold.white(chalk.white(codeBot)))
+console.log(chalk.bold.hex('#ffaa00')(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    🔐 CÓDIGO DE VINCULACIÓN GENERADO                        ║
+║                                                              ║
+║    ┌─────────────────────────────────────────────────────┐   ║
+║    │                                                     │   ║
+║    │  `) + chalk.bold.bgHex('#ffaa00').black(`    ${codeBot}    `) + chalk.bold.hex('#ffaa00')(`                │   ║
+║    │                                                     │   ║
+║    └─────────────────────────────────────────────────────┘   ║
+║                                                              ║
+║    📱 PASOS PARA VINCULAR:                                  ║
+║      1️⃣  Abre WhatsApp                                      ║
+║      2️⃣  Ve a Dispositivos Vinculados                       ║
+║      3️⃣  Toca "Vincular con código"                         ║
+║      4️⃣  Ingresa el código de arriba                        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`))
 }, 3000)
 }}}
 }
@@ -207,12 +262,41 @@ await global.reloadHandler(true).catch(console.error);
 global.timestamp.connect = new Date;
 }
 if (global.db.data == null) loadDatabase();
+
+// MENSAJE QR REDISEÑADO
 if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
 if (opcion == '1' || methodCodeQR) {
-console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR EXPIRA EN 45 SEGUNDOS`))}
-}
+console.log(chalk.bold.hex('#00ff88')(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    📱 ESCANEA EL CÓDIGO QR CON WHATSAPP                     ║
+║                                                              ║
+║    ⏰ TIEMPO LÍMITE: 45 SEGUNDOS                            ║
+║    📋 PASOS:                                                ║
+║      1️⃣  Abre WhatsApp en tu teléfono                       ║
+║      2️⃣  Ve a Dispositivos Vinculados                       ║
+║      3️⃣  Toca "Vincular dispositivo"                        ║
+║      4️⃣  Escanea el código QR de abajo                      ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`))
+}}
+
+// MENSAJE DE CONEXIÓN EXITOSA REDISEÑADO
 if (connection == 'open') {
-console.log(chalk.bold.green('\n❀ Asta_bot Conectado con éxito ❀'))
+console.log(chalk.bold.hex('#00ff88')(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    🎉 ¡CONEXIÓN ESTABLECIDA CON ÉXITO! 🎉                   ║
+║                                                              ║
+║    ✅ Asta-Bot está ahora ONLINE y listo para usar          ║
+║    🤖 Todos los sistemas funcionando correctamente          ║
+║    📱 Bot vinculado exitosamente a WhatsApp                 ║
+║                                                              ║
+║    🚀 ¡Disfruta usando Asta-Bot! 🚀                        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
